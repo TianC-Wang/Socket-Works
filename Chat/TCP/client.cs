@@ -11,29 +11,32 @@ namespace MainSpace
         {
             try
             {
-                Console.Out.Write("Client end program\n\n");
-                Console.Out.Write("Server IP? ");
-                string Server_IP = Console.In.ReadLine();
-                Console.Out.Write("Server Port? ");
-                string Server_Port = Console.In.ReadLine();
-                IPEndPoint IPEP = new IPEndPoint(IPAddress.Parse(Server_IP), int.Parse(Server_Port));
-                Socket Socket_Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                Socket_Client.Connect(IPEP);
-                Console.Out.Write("Connected!\n\n");
-                while (true)
-                {
-                    string Input = Console.In.ReadLine();
-                    Socket_Client.Send(Encoding.UTF8.GetBytes(Input));
-                    byte[] Buffer = new byte[1024];
-                    Socket_Client.Receive(Buffer);
-                    Console.Out.WriteLine(Encoding.UTF8.GetString(Buffer).Trim((char)0));
-                }
-                Socket_Client.Close();
+                SocketAsyncEventArgs recvE = new SocketAsyncEventArgs();
+                SocketAsyncEventArgs sendE = new SocketAsyncEventArgs();
+                sendE.SetBuffer(Encoding.UTF8.GetBytes("Hello World!"), 0, 12);
+                sendE.Completed += sendE_Completed;
+                recvE.Completed += recvE_Completed;
+                Socket Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                IPEndPoint IPEP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 10101);
+                Sock.Connect(IPEP);
+                Sock.SendAsync(sendE);
+                Sock.ReceiveAsync(recvE);
+                while (true) ;
             }
             catch(Exception Socket_Exception)
             {
                 Console.Error.Write(Socket_Exception.Message);
             }
+        }
+
+        private static void recvE_Completed(object sender, SocketAsyncEventArgs e)
+        {
+            Console.Out.Write("Received: " + Encoding.UTF8.GetString(e.Buffer));
+        }
+
+        private static void sendE_Completed(object sender, SocketAsyncEventArgs e)
+        {
+            Console.Out.WriteLine("Sended!");
         }
     }
 }

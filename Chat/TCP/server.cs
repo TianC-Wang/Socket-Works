@@ -15,24 +15,16 @@ namespace MainSpace
         {
             try
             {
-                Console.Out.Write("Server end program\n\n");
-                Console.Out.Write("Open Port? ");
-                string Server_Port = Console.In.ReadLine();
-                IPEndPoint IPEP = new IPEndPoint(IPAddress.Any, int.Parse(Server_Port));
-                Socket Socket_Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                Socket_Server.Bind(IPEP);
-                Socket_Server.Listen(5);
-                Socket Socket_Client = Socket_Server.Accept();
-                Console.Out.Write("Connected " + ((IPEndPoint)Socket_Client.RemoteEndPoint).Address.ToString() + "!\n\n");
-                while (true)
-                {
-                    byte[] Buffer = new byte[1024];
-                    Socket_Client.Receive(Buffer);
-                    Console.Out.WriteLine(Encoding.UTF8.GetString(Buffer).Trim((char)0));
-                    string Input = Console.In.ReadLine();
-                    Socket_Client.Send(Encoding.UTF8.GetBytes(Input));
-                }
-                Socket_Client.Close();
+                byte[] Buffer = new byte[256];
+                Socket Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                IPEndPoint IPEP = new IPEndPoint(IPAddress.Any, 10101);
+                Sock.Bind(IPEP);
+                Sock.Listen(1);
+                Socket Conv = Sock.Accept();
+                Sock.Close();
+                Conv.Receive(Buffer);
+                Console.Out.WriteLine("Received: " + Encoding.UTF8.GetString(Buffer));
+                Conv.Send(Encoding.UTF8.GetBytes("Hello World!"));
             }
             catch (Exception Socket_Exception)
             {
